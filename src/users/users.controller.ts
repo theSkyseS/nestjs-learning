@@ -1,10 +1,11 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ApiBody } from '@nestjs/swagger';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserModel } from './users.model';
 import { UsersService } from './users.service';
 
+@ApiTags('Users')
 @Controller('users')
 export class UsersController {
   constructor(private usersServise: UsersService) {}
@@ -24,3 +25,4 @@ export class UsersController {
     return this.usersServise.getAllUsers();
   }
 }
+

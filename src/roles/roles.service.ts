@@ -11,11 +11,11 @@ export class RolesService {
     private readonly roleModel: typeof RoleModel,
   ) {}
 
-  async findAll(): Promise<RoleModel[]> {
+  async getAllRoles(): Promise<RoleModel[]> {
     return await this.roleModel.findAll();
   }
 
-  async findByName(name: string): Promise<RoleModel> {
+  async getRoleByName(name: string): Promise<RoleModel> {
     return await this.roleModel.findOne({
       where: {
         name: name,
@@ -23,8 +23,7 @@ export class RolesService {
     });
   }
 
-  async create(role: CreateRoleDto): Promise<RoleModel> {
+  async createRole(role: CreateRoleDto): Promise<RoleModel> {
     return await this.roleModel.create(role);
   }
 }
-
