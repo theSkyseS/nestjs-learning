@@ -14,7 +14,7 @@ interface RoleCreationAttributes {
 }
 
 @Table({ tableName: 'roles' })
-export class RolesModel extends Model<RolesModel, RoleCreationAttributes> {
+export class RoleModel extends Model<RoleModel, RoleCreationAttributes> {
   @ApiProperty({ description: "Role's ID", example: '2' })
   @Column({
     type: DataType.INTEGER,

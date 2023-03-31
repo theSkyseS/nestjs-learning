@@ -6,7 +6,7 @@ import {
   Model,
   Table,
 } from 'sequelize-typescript';
-import { RolesModel } from 'src/roles/roles.model';
+import { RoleModel } from 'src/roles/roles.model';
 import { UserRolesModel } from 'src/roles/user-roles.model';
 
 interface UserModelCreationAttr {
@@ -40,6 +40,6 @@ export class UserModel extends Model<UserModel, UserModelCreationAttr> {
   })
   password: string;
 
-  @BelongsToMany(() => RolesModel, () => UserRolesModel)
-  roles: RolesModel[];
+  @BelongsToMany(() => RoleModel, () => UserRolesModel)
+  roles: RoleModel[];
 }

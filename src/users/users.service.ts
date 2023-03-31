@@ -9,11 +9,11 @@ export class UsersService {
     @InjectModel(UserModel) private userRepository: typeof UserModel,
   ) {}
 
-  async createUser(dto: CreateUserDto) {
+  async createUser(dto: CreateUserDto): Promise<UserModel> {
     return await this.userRepository.create(dto);
   }
 
-  async getAllUsers() {
+  async getAllUsers(): Promise<UserModel[]> {
     return await this.userRepository.findAll({ include: { all: true } });
   }
 }
