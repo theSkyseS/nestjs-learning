@@ -1,10 +1,14 @@
-import { Controller, Get, Post, Param } from '@nestjs/common';
+import { Controller, Get, Post, Param, UseGuards, Body } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RoleModel } from './roles.model';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { RolesGuard } from 'src/auth/roles.guard';
 
 @ApiTags('Roles')
+@UseGuards(AuthGuard)
+@UseGuards(RolesGuard)
 @Controller('roles')
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
@@ -13,7 +17,7 @@ export class RolesController {
   @ApiResponse({ status: 201, type: RoleModel })
   @ApiBody({ type: CreateRoleDto })
   @Post()
-  create(@Param('roleDto') dto: CreateRoleDto) {
+  create(@Body() dto: CreateRoleDto) {
     return this.rolesService.createRole(dto);
   }
 
