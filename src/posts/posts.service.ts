@@ -2,15 +2,25 @@ import { Injectable } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { PostModel } from './posts.model';
+import { FilesService } from 'src/files/files.service';
+import { CreateFileDto } from 'src/files/dto/create-file.dto';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectModel(PostModel) private postRepository: typeof PostModel,
+    private readonly filesService: FilesService,
   ) {}
 
-  async create(createPostDto: CreatePostDto) {
-    return await this.postRepository.create(createPostDto);
+  async create(dto: CreatePostDto & CreateFileDto, file: Express.Multer.File) {
+    let fileName: string = null;
+    if (file) {
+      fileName = (await this.filesService.createFile(dto, file)).fileName;
+    }
+    return await this.postRepository.create({
+      ...dto,
+      image: fileName,
+    });
   }
 
   async findAll() {
@@ -33,7 +43,14 @@ export class PostsService {
   }
 
   async remove(id: string) {
-    const post = await this.postRepository.findByPk(id);
-    return await post.destroy();
+    const transaction = await this.postRepository.sequelize.transaction();
+    try {
+      const post = await this.postRepository.findByPk(id);
+      await this.filesService.queueToRemove(post.image);
+      return await post.destroy();
+    } catch (e) {
+      transaction.rollback();
+      throw e;
+    }
   }
 }

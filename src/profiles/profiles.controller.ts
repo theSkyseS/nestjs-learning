@@ -11,12 +11,12 @@ import { ProfilesService } from './profiles.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProfileModel } from './profiles.model';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { RolesGuard } from 'src/auth/roles.guard';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Roles } from 'src/auth/roles.decorator';
+import { ProfileAccessGuard } from 'src/auth/profile-access.guard';
 
 @ApiTags('Profiles')
-@UseGuards(RolesGuard)
+@UseGuards(ProfileAccessGuard)
 @Controller('profiles')
 export class ProfilesController {
   constructor(private profilesService: ProfilesService) {}

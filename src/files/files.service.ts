@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import path from 'path';
-import fs from 'fs';
-import uuid from 'uuid';
+import * as path from 'path';
+import * as fs from 'fs';
+import * as uuid from 'uuid';
 import { InjectModel } from '@nestjs/sequelize';
 import { FilesModel } from './files.model';
 import { CreateFileDto } from './dto/create-file.dto';
@@ -14,7 +14,7 @@ export class FilesService {
   async createFile(dto: CreateFileDto, file: Express.Multer.File) {
     const fileName = uuid.v4() + path.extname(file.originalname);
     try {
-      const filePath = path.resolve(process.cwd(), '..', 'static');
+      const filePath = path.resolve(__dirname, '..', 'static');
       if (!fs.existsSync(filePath)) {
         fs.mkdirSync(filePath, { recursive: true });
       }
@@ -39,6 +39,13 @@ export class FilesService {
       }
     });
     return await this.filesModel.destroy({ where: { fileName } });
+  }
+
+  async queueToRemove(fileName: string) {
+    return await this.filesModel.update(
+      { essenceTable: null, essenceId: null },
+      { where: { fileName } },
+    );
   }
 
   async removeUnusedFiles() {

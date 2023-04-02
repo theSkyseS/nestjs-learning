@@ -3,5 +3,5 @@ export class CreatePostDto {
   title: string;
   text: string;
   group: string;
-  image: string;
+  image?: string;
 }

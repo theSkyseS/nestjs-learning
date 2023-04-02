@@ -19,7 +19,7 @@ export class PostModel extends Model<PostModel, PostCreationAttr> {
 
   @Column({
     type: DataType.STRING,
-    unique: true,
+    unique: false,
     allowNull: false,
   })
   title: string;
