@@ -9,6 +9,9 @@ import { UserRolesModel } from './roles/user-roles.model';
 import { AuthModule } from './auth/auth.module';
 import { ProfilesModule } from './profiles/profiles.module';
 import { ProfileModel } from './profiles/profiles.model';
+import { PostsModule } from './posts/posts.module';
+import { PostModel } from './posts/posts.model';
+import { FilesModule } from './files/files.module';
 
 @Module({
   imports: [
@@ -22,13 +25,15 @@ import { ProfileModel } from './profiles/profiles.model';
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      models: [UserModel, RoleModel, UserRolesModel, ProfileModel],
+      models: [UserModel, RoleModel, UserRolesModel, ProfileModel, PostModel],
       autoLoadModels: true,
     }),
     UsersModule,
     RolesModule,
     AuthModule,
     ProfilesModule,
+    PostsModule,
+    FilesModule,
   ],
 })
 export class AppModule {}
