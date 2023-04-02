@@ -1,19 +1,12 @@
-import { Module, forwardRef } from '@nestjs/common';
-import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { UsersModule } from 'src/users/users.module';
 import { JwtModule } from '@nestjs/jwt';
+import { SequelizeModule } from '@nestjs/sequelize';
+import { RefreshModel } from './refresh-token.model';
+import { Module } from '@nestjs/common';
 
 @Module({
-  controllers: [AuthController],
   providers: [AuthService],
-  imports: [
-    forwardRef(() => UsersModule),
-    JwtModule.register({
-      secret: process.env.PRIVATE_KEY || 'secret',
-      signOptions: { expiresIn: '1d' },
-    }),
-  ],
+  imports: [SequelizeModule.forFeature([RefreshModel]), JwtModule],
   exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

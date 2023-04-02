@@ -1,62 +1,88 @@
-import {
-  BadRequestException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcryptjs';
 import { UserModel } from 'src/users/users.model';
 import { Payload } from 'src/auth/auth.payload';
+import { InjectModel } from '@nestjs/sequelize';
+import { RefreshModel } from './refresh-token.model';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private userService: UsersService,
+    @InjectModel(RefreshModel) private refreshRepository: typeof RefreshModel,
     private jwtService: JwtService,
   ) {}
 
-  async login(user: CreateUserDto) {
-    const userData = await this.userService.getUserByEmail(user.email);
-    if (!userData) {
-      throw new BadRequestException('User not found');
-    }
-    const isValid = await this.validatePassword(
-      user.password,
-      userData.password,
-    );
-    if (!isValid) {
-      throw new UnauthorizedException('Invalid password');
-    }
-    return await this.generateAccessToken(userData);
+  async findRefreshToken(refreshToken: string) {
+    return await this.refreshRepository.findByPk(refreshToken);
   }
 
-  async register(user: CreateUserDto) {
-    const userData = await this.userService.getUserByEmail(user.email);
-    if (userData) {
-      throw new Error('User already exists');
+  async validateRefreshToken(refreshToken: string) {
+    try {
+      const userData = await this.jwtService.verifyAsync<Payload>(
+        refreshToken,
+        { secret: process.env.JWT_REFRESH_SECRET },
+      );
+      return userData;
+    } catch (e) {
+      return null;
     }
-    const hashedPassword = await bcrypt.hash(user.password, 10);
-    const newUser = await this.userService.createUser({
-      ...user,
-      password: hashedPassword,
+  }
+
+  async validateAccessToken(accessToken: string) {
+    try {
+      const userData = await this.jwtService.verifyAsync<Payload>(accessToken, {
+        secret: process.env.JWT_ACCESS_SECRET,
+      });
+      return userData;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async saveRefreshToken(refreshToken: string, userId: number) {
+    const tokenData = await this.refreshRepository.findOne({
+      where: {
+        userId,
+      },
     });
-    return await this.generateAccessToken(newUser);
+
+    if (tokenData) {
+      await tokenData.update({
+        refreshToken,
+      });
+    } else {
+      await this.refreshRepository.create({
+        userId,
+        refreshToken,
+      });
+    }
   }
 
-  private async validatePassword(password: string, hashedPassword: string) {
+  async removeRefreshToken(refreshToken: string) {
+    const tokenData = await this.refreshRepository.findByPk(refreshToken);
+    return await tokenData.destroy();
+  }
+
+  async validatePassword(password: string, hashedPassword: string) {
     return await bcrypt.compare(password, hashedPassword);
   }
 
-  private async generateAccessToken(newUser: UserModel) {
+  async generateToken(newUser: UserModel) {
     const payload: Payload = {
       id: newUser.id,
       email: newUser.email,
       roles: newUser.roles.map((role) => role.name),
     };
     return {
-      access_token: await this.jwtService.signAsync(payload),
+      access_token: await this.jwtService.signAsync(payload, {
+        secret: process.env.JWT_ACCESS_SECRET,
+        expiresIn: process.env.JWT_ACCESS_EXPIRES_IN,
+      }),
+      refresh_token: await this.jwtService.signAsync(payload, {
+        secret: process.env.JWT_REFRESH_SECRET,
+        expiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
+      }),
     };
   }
 }
