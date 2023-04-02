@@ -45,8 +45,7 @@ export class ProfilesService {
 
   async updateProfile(id: string, userDto: UpdateProfileDto) {
     const profile = await this.profileRepository.findByPk(id);
-    await profile.update(userDto);
-    return profile;
+    return await profile.update(userDto);
   }
 
   async deleteProfile(id: string) {

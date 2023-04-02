@@ -1,9 +1,22 @@
-import { Body, Controller, Delete, Get, Param, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { ProfilesService } from './profiles.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProfileModel } from './profiles.model';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { RolesGuard } from 'src/auth/roles.guard';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { Roles } from 'src/auth/roles.decorator';
+
 @ApiTags('Profiles')
+@UseGuards(RolesGuard)
 @Controller('profiles')
 export class ProfilesController {
   constructor(private profilesService: ProfilesService) {}
@@ -22,11 +35,15 @@ export class ProfilesController {
     return this.profilesService.getProfileById(id);
   }
 
+  @UseGuards(AuthGuard)
+  @Roles('ADMIN')
   @Put(':id')
   update(@Param('id') id: string, @Body() userDto: UpdateProfileDto) {
     return this.profilesService.updateProfile(id, userDto);
   }
 
+  @UseGuards(AuthGuard)
+  @Roles('ADMIN')
   @Delete(':id')
   delete(@Param('id') id: string) {
     return this.profilesService.deleteProfile(id);
