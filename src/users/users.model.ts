@@ -3,9 +3,11 @@ import {
   BelongsToMany,
   Column,
   DataType,
+  HasOne,
   Model,
   Table,
 } from 'sequelize-typescript';
+import { ProfileModel } from 'src/profiles/profiles.model';
 import { RoleModel } from 'src/roles/roles.model';
 import { UserRolesModel } from 'src/roles/user-roles.model';
 
@@ -42,4 +44,7 @@ export class UserModel extends Model<UserModel, UserModelCreationAttr> {
 
   @BelongsToMany(() => RoleModel, () => UserRolesModel)
   roles: RoleModel[];
+
+  @HasOne(() => ProfileModel, 'userId')
+  profile: ProfileModel;
 }

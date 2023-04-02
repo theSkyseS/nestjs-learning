@@ -10,6 +10,7 @@ import { RolesService } from 'src/roles/roles.service';
 import { RoleModel } from 'src/roles/roles.model';
 import { AuthService } from 'src/auth/auth.service';
 import * as bcrypt from 'bcryptjs';
+import { AddRoleDto } from './dto/add-role.dto';
 
 @Injectable()
 export class UsersService {
@@ -41,7 +42,7 @@ export class UsersService {
   async register(user: CreateUserDto) {
     const userData = await this.getUserByEmail(user.email);
     if (userData) {
-      throw new Error('User already exists');
+      throw new BadRequestException('User already exists');
     }
     const hashedPassword = await bcrypt.hash(user.password, 10);
     const newUser = await this.createUser({
@@ -66,7 +67,8 @@ export class UsersService {
     if (!tokenData) {
       throw new UnauthorizedException('Invalid refresh token');
     }
-    const userData = tokenData.user;
+    const userData = await this.getUserById(tokenData.userId);
+    console.log(userData);
     const tokens = await this.authService.generateToken(userData);
     this.authService.saveRefreshToken(tokens.refresh_token, userData.id);
     return { user: userData, response: tokens };
@@ -89,5 +91,20 @@ export class UsersService {
       where: { email },
       include: RoleModel,
     });
+  }
+
+  async getUserById(id: number): Promise<UserModel> {
+    return await this.userRepository.findByPk(id, {
+      include: RoleModel,
+    });
+  }
+
+  async addRoleToUser(dto: AddRoleDto) {
+    const user = await this.userRepository.findByPk(dto.userId);
+    const role = await this.rolesService.getRoleByName(dto.role);
+    if (role && user) {
+      await user.$add('roles', role.id);
+      return dto;
+    }
   }
 }
