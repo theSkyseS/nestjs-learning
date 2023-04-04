@@ -14,21 +14,22 @@ export class PostsService {
 
   async create(dto: CreatePostDto, file: Express.Multer.File) {
     let fileName: string = null;
+    const post = await this.postRepository.create({
+      ...dto,
+      image: fileName,
+    });
     if (file) {
       fileName = (
         await this.filesService.createFile(
           {
-            essenceId: dto.searchTitle,
+            essenceId: post.id,
             essenceTable: this.POST_ESSENCE_NAME,
           },
           file,
         )
       ).fileName;
     }
-    return await this.postRepository.create({
-      ...dto,
-      image: fileName,
-    });
+    return post;
   }
 
   async findAll() {
