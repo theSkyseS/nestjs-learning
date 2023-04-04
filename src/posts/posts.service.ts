@@ -3,19 +3,27 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { PostModel } from './posts.model';
 import { FilesService } from 'src/files/files.service';
-import { CreateFileDto } from 'src/files/dto/create-file.dto';
 
 @Injectable()
 export class PostsService {
+  private readonly POST_ESSENCE_NAME: string = 'posts';
   constructor(
     @InjectModel(PostModel) private postRepository: typeof PostModel,
     private readonly filesService: FilesService,
   ) {}
 
-  async create(dto: CreatePostDto & CreateFileDto, file: Express.Multer.File) {
+  async create(dto: CreatePostDto, file: Express.Multer.File) {
     let fileName: string = null;
     if (file) {
-      fileName = (await this.filesService.createFile(dto, file)).fileName;
+      fileName = (
+        await this.filesService.createFile(
+          {
+            essenceId: dto.searchTitle,
+            essenceTable: this.POST_ESSENCE_NAME,
+          },
+          file,
+        )
+      ).fileName;
     }
     return await this.postRepository.create({
       ...dto,
