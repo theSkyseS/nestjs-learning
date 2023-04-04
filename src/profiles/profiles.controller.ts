@@ -16,7 +16,6 @@ import { Roles } from 'src/auth/roles.decorator';
 import { ProfileAccessGuard } from 'src/auth/profile-access.guard';
 
 @ApiTags('Profiles')
-@UseGuards(ProfileAccessGuard)
 @Controller('profiles')
 export class ProfilesController {
   constructor(private profilesService: ProfilesService) {}
@@ -35,6 +34,7 @@ export class ProfilesController {
     return this.profilesService.getProfileById(id);
   }
 
+  @UseGuards(ProfileAccessGuard)
   @UseGuards(AuthGuard)
   @Roles('ADMIN')
   @Put(':id')
@@ -42,6 +42,7 @@ export class ProfilesController {
     return this.profilesService.updateProfile(id, userDto);
   }
 
+  @UseGuards(ProfileAccessGuard)
   @UseGuards(AuthGuard)
   @Roles('ADMIN')
   @Delete(':id')

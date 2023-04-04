@@ -5,10 +5,11 @@ import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RoleModel } from './roles.model';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
+import { Roles } from 'src/auth/roles.decorator';
 
 @ApiTags('Roles')
-@UseGuards(AuthGuard)
 @UseGuards(RolesGuard)
+@UseGuards(AuthGuard)
 @Controller('roles')
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
@@ -16,6 +17,7 @@ export class RolesController {
   @ApiOperation({ summary: 'Creates a new role' })
   @ApiResponse({ status: 201, type: RoleModel })
   @ApiBody({ type: CreateRoleDto })
+  @Roles('ADMIN')
   @Post()
   create(@Body() dto: CreateRoleDto) {
     return this.rolesService.createRole(dto);
