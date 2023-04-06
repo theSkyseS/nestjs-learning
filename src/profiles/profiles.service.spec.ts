@@ -1,9 +1,9 @@
-import { CreateProfileDto } from './dto/create-profile.dto';
-import { Test, TestingModule } from '@nestjs/testing';
-import { ProfilesService } from './profiles.service';
-import { UsersService } from 'src/users/users.service';
-import { ProfileModel } from './profiles.model';
 import { getModelToken } from '@nestjs/sequelize';
+import { Test, TestingModule } from '@nestjs/testing';
+import { UsersService } from '../users/users.service';
+import { CreateProfileDto } from './dto/create-profile.dto';
+import { ProfileModel } from './profiles.model';
+import { ProfilesService } from './profiles.service';
 
 describe('ProfilesService', () => {
   const userMock = {
@@ -31,7 +31,7 @@ describe('ProfilesService', () => {
   };
 
   let service: ProfilesService;
-  let model: typeof ProfileModel;
+  let usersService: UsersService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -49,18 +49,21 @@ describe('ProfilesService', () => {
         {
           provide: getModelToken(ProfileModel),
           useValue: {
-            findAll: jest.fn(() => [userMock]),
+            findAll: jest.fn(() => [profileMock]),
             findOne: jest.fn(),
+            findByPk: jest.fn(() => profileMock),
             create: jest.fn(() => profileMock),
-            remove: jest.fn(),
-            destroy: jest.fn(() => oneUser),
+            destroy: jest.fn(),
+            sequelize: {
+              transaction: jest.fn(),
+            },
           },
         },
       ],
     }).compile();
 
     service = module.get<ProfilesService>(ProfilesService);
-    model = module.get<typeof ProfileModel>(getModelToken(ProfileModel));
+    usersService = module.get<UsersService>(UsersService);
   });
 
   it('should be defined', () => {
@@ -69,8 +72,29 @@ describe('ProfilesService', () => {
 
   describe('registerNewUser', () => {
     it('should create a new profile', async () => {
+      const expected = {
+        id: 1,
+        name: 'Jane Doe',
+        phoneNumber: '0987654321',
+        about: 'I hate tomatoes',
+        address: '456 Oak St',
+        userId: userMock.id,
+        user: userMock,
+      };
       const result = await service.registerNewUser(dto);
-      expect(result).toEqual(expect.objectContaining(profileMock));
+      expect(result).toEqual(expect.objectContaining(expected));
+    });
+
+    it('should register a new user', async () => {
+      const registerSpy = jest.spyOn(usersService, 'register');
+      await service.registerNewUser(dto);
+      expect(registerSpy).toHaveBeenCalledWith(dto);
+    });
+
+    it('should assign user to profile', async () => {
+      const result = await service.registerNewUser(dto);
+      expect(result.profile.user).toEqual(userMock);
+      expect(result.profile.userId).toEqual(userMock.id);
     });
   });
 });

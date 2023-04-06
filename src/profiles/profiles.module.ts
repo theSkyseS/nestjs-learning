@@ -1,10 +1,10 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { ProfilesService } from './profiles.service';
-import { ProfilesController } from './profiles.controller';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { AuthModule } from '../auth/auth.module';
+import { UsersModule } from '../users/users.module';
+import { ProfilesController } from './profiles.controller';
 import { ProfileModel } from './profiles.model';
-import { UsersModule } from 'src/users/users.module';
-import { AuthModule } from 'src/auth/auth.module';
+import { ProfilesService } from './profiles.service';
 
 @Module({
   providers: [ProfilesService],

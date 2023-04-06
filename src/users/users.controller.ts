@@ -1,15 +1,15 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '../auth/auth.guard';
+import { Roles } from '../auth/roles.decorator';
+import { RolesGuard } from '../auth/roles.guard';
+import { CreateProfileDto } from '../profiles/dto/create-profile.dto';
+import { ProfileModel } from '../profiles/profiles.model';
+import { ProfilesService } from '../profiles/profiles.service';
+import { AddRoleDto } from './dto/add-role.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserModel } from './users.model';
 import { UsersService } from './users.service';
-import { AuthGuard } from 'src/auth/auth.guard';
-import { Roles } from 'src/auth/roles.decorator';
-import { RolesGuard } from 'src/auth/roles.guard';
-import { CreateProfileDto } from 'src/profiles/dto/create-profile.dto';
-import { ProfileModel } from 'src/profiles/profiles.model';
-import { ProfilesService } from 'src/profiles/profiles.service';
-import { AddRoleDto } from './dto/add-role.dto';
 
 @ApiTags('Users')
 @UseGuards(RolesGuard)

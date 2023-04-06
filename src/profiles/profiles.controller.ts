@@ -7,13 +7,13 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { ProfilesService } from './profiles.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ProfileModel } from './profiles.model';
+import { AuthGuard } from '../auth/auth.guard';
+import { ProfileAccessGuard } from '../auth/profile-access.guard';
+import { Roles } from '../auth/roles.decorator';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { AuthGuard } from 'src/auth/auth.guard';
-import { Roles } from 'src/auth/roles.decorator';
-import { ProfileAccessGuard } from 'src/auth/profile-access.guard';
+import { ProfileModel } from './profiles.model';
+import { ProfilesService } from './profiles.service';
 
 @ApiTags('Profiles')
 @Controller('profiles')

@@ -4,13 +4,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import * as bcrypt from 'bcryptjs';
+import { AuthService } from '../auth/auth.service';
+import { RoleModel } from '../roles/roles.model';
+import { RolesService } from '../roles/roles.service';
+import { AddRoleDto } from './dto/add-role.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserModel } from './users.model';
-import { RolesService } from 'src/roles/roles.service';
-import { RoleModel } from 'src/roles/roles.model';
-import { AuthService } from 'src/auth/auth.service';
-import * as bcrypt from 'bcryptjs';
-import { AddRoleDto } from './dto/add-role.dto';
 
 @Injectable()
 export class UsersService {
