@@ -13,6 +13,11 @@ describe('ProfilesService', () => {
     roles: [],
   };
 
+  const tokensMock = {
+    accessToken: 'accessToken',
+    refreshToken: 'refreshToken',
+  };
+
   const dto: CreateProfileDto = {
     email: 'janedoe@example.com',
     password: 'encryptedString123',
@@ -28,6 +33,11 @@ describe('ProfilesService', () => {
     phoneNumber: '0987654321',
     about: 'I hate tomatoes',
     address: '456 Oak St',
+    userId: undefined,
+    user: undefined,
+    $set: jest.fn(() => {
+      profileMock.userId = userMock.id;
+    }),
   };
 
   let service: ProfilesService;
@@ -42,7 +52,7 @@ describe('ProfilesService', () => {
           useValue: {
             register: jest.fn().mockReturnValue({
               user: userMock,
-              tokens: {},
+              response: tokensMock,
             }),
           },
         },
@@ -55,7 +65,10 @@ describe('ProfilesService', () => {
             create: jest.fn(() => profileMock),
             destroy: jest.fn(),
             sequelize: {
-              transaction: jest.fn(),
+              transaction: () => ({
+                commit: jest.fn(),
+                rollback: jest.fn(),
+              }),
             },
           },
         },
@@ -72,7 +85,7 @@ describe('ProfilesService', () => {
 
   describe('registerNewUser', () => {
     it('should create a new profile', async () => {
-      const expected = {
+      const expectedProfile = {
         id: 1,
         name: 'Jane Doe',
         phoneNumber: '0987654321',
@@ -81,8 +94,15 @@ describe('ProfilesService', () => {
         userId: userMock.id,
         user: userMock,
       };
+      const expectedTokens = {
+        accessToken: 'accessToken',
+        refreshToken: 'refreshToken',
+      };
       const result = await service.registerNewUser(dto);
-      expect(result).toEqual(expect.objectContaining(expected));
+      expect(result).toEqual({
+        profile: expect.objectContaining(expectedProfile),
+        tokens: expectedTokens,
+      });
     });
 
     it('should register a new user', async () => {
