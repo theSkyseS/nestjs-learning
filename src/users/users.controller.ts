@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -8,6 +17,7 @@ import { ProfileModel } from '../profiles/profiles.model';
 import { ProfilesService } from '../profiles/profiles.service';
 import { AddRoleDto } from './dto/add-role.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { UserModel } from './users.model';
 import { UsersService } from './users.service';
 
@@ -104,6 +114,19 @@ export class UsersController {
     return this.usersServise.logout(refreshToken);
   }
 
+  @ApiOperation({ summary: 'Removes specified role from user' })
+  @ApiResponse({ status: 201, type: AddRoleDto })
+  @ApiBody({ type: AddRoleDto })
+  @UseGuards(AuthGuard)
+  @Roles('ADMIN')
+  @Post('/role/remove')
+  removeRole(@Body() dto: AddRoleDto) {
+    return this.usersServise.removeRoleFromUser(dto);
+  }
+
+  @ApiOperation({ summary: 'Adds specified role to user' })
+  @ApiResponse({ status: 201, type: AddRoleDto })
+  @ApiBody({ type: AddRoleDto })
   @UseGuards(AuthGuard)
   @Roles('ADMIN')
   @Post('/role')
@@ -116,5 +139,24 @@ export class UsersController {
   @Get(':id')
   get(@Param('id') id: number) {
     return this.usersServise.getUserById(id);
+  }
+
+  @ApiOperation({ summary: 'Updates user' })
+  @ApiResponse({ status: 200, type: UserModel })
+  @ApiBody({ type: UpdateUserDto })
+  @UseGuards(AuthGuard)
+  @Roles('ADMIN')
+  @Put(':id')
+  update(@Param('id') id: number, @Body() userDto: UpdateUserDto) {
+    return this.usersServise.updateUser(id, userDto);
+  }
+
+  @ApiOperation({ summary: 'Deletes user' })
+  @ApiResponse({ status: 200 })
+  @UseGuards(AuthGuard)
+  @Roles('ADMIN')
+  @Delete(':id')
+  delete(@Param('id') id: number) {
+    return this.usersServise.deleteUser(id);
   }
 }
