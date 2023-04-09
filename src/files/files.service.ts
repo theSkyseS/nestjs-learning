@@ -1,11 +1,11 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import * as path from 'path';
-import * as fs from 'fs';
-import * as uuid from 'uuid';
 import { InjectModel } from '@nestjs/sequelize';
-import { FilesModel } from './files.model';
-import { CreateFileDto } from './dto/create-file.dto';
+import * as fs from 'fs';
+import * as path from 'path';
 import { Op } from 'sequelize';
+import * as uuid from 'uuid';
+import { CreateFileDto } from './dto/create-file.dto';
+import { FilesModel } from './files.model';
 
 @Injectable()
 export class FilesService {

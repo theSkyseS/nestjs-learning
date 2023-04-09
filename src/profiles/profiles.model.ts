@@ -6,7 +6,7 @@ import {
   Model,
   Table,
 } from 'sequelize-typescript';
-import { UserModel } from 'src/users/users.model';
+import { UserModel } from '../users/users.model';
 
 interface ProfileModelCreationAttr {
   name: string;

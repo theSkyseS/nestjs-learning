@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcryptjs';
-import { UserModel } from 'src/users/users.model';
-import { Payload } from 'src/auth/auth.payload';
 import { InjectModel } from '@nestjs/sequelize';
+import * as bcrypt from 'bcryptjs';
+import { Payload } from '../auth/auth.payload';
+import { UserModel } from '../users/users.model';
 import { RefreshModel } from './refresh-token.model';
 
 @Injectable()

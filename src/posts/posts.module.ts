@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { PostsService } from './posts.service';
-import { PostsController } from './posts.controller';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { AuthModule } from '../auth/auth.module';
+import { FilesModule } from '../files/files.module';
+import { PostsController } from './posts.controller';
 import { PostModel } from './posts.model';
-import { AuthModule } from 'src/auth/auth.module';
-import { FilesModule } from 'src/files/files.module';
+import { PostsService } from './posts.service';
 
 @Module({
   controllers: [PostsController],

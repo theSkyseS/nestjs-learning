@@ -1,9 +1,9 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { RolesService } from './roles.service';
-import { RolesController } from './roles.controller';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { AuthModule } from '../auth/auth.module';
+import { RolesController } from './roles.controller';
 import { RoleModel } from './roles.model';
-import { AuthModule } from 'src/auth/auth.module';
+import { RolesService } from './roles.service';
 
 @Module({
   providers: [RolesService],

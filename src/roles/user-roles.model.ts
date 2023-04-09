@@ -5,7 +5,7 @@ import {
   Model,
   Table,
 } from 'sequelize-typescript';
-import { UserModel } from 'src/users/users.model';
+import { UserModel } from '../users/users.model';
 import { RoleModel } from './roles.model';
 
 @Table({ tableName: 'user-roles', createdAt: false, updatedAt: false })

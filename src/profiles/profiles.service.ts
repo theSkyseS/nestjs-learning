@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreateProfileDto } from './dto/create-profile.dto';
 import { InjectModel } from '@nestjs/sequelize';
-import { ProfileModel } from './profiles.model';
+import { UsersService } from '../users/users.service';
+import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { UsersService } from 'src/users/users.service';
+import { ProfileModel } from './profiles.model';
 
 @Injectable()
 export class ProfilesService {

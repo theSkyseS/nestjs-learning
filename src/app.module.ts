@@ -1,24 +1,24 @@
 import { Module } from '@nestjs/common';
-import { UsersModule } from './users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { UserModel } from './users/users.model';
-import { RolesModule } from './roles/roles.module';
-import { RoleModel } from './roles/roles.model';
-import { UserRolesModel } from './roles/user-roles.model';
-import { AuthModule } from './auth/auth.module';
-import { ProfilesModule } from './profiles/profiles.module';
-import { ProfileModel } from './profiles/profiles.model';
-import { PostsModule } from './posts/posts.module';
-import { PostModel } from './posts/posts.model';
-import { FilesModule } from './files/files.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import * as path from 'path';
+import { AuthModule } from './auth/auth.module';
+import { FilesModule } from './files/files.module';
+import { PostModel } from './posts/posts.model';
+import { PostsModule } from './posts/posts.module';
+import { ProfileModel } from './profiles/profiles.model';
+import { ProfilesModule } from './profiles/profiles.module';
+import { RoleModel } from './roles/roles.model';
+import { RolesModule } from './roles/roles.module';
+import { UserRolesModel } from './roles/user-roles.model';
+import { UserModel } from './users/users.model';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: '.env',
+      envFilePath: process.env.NODE_ENV == 'testing' ? '.testing.env' : '.env',
     }),
     ServeStaticModule.forRoot({
       rootPath: path.resolve(__dirname, 'static'),
