@@ -11,6 +11,7 @@ import { RoleModel } from 'src/roles/roles.model';
 import { AuthService } from 'src/auth/auth.service';
 import * as bcrypt from 'bcryptjs';
 import { AddRoleDto } from './dto/add-role.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -44,7 +45,10 @@ export class UsersService {
     if (userData) {
       throw new BadRequestException('User already exists');
     }
-    const hashedPassword = await bcrypt.hash(user.password, 10);
+    const hashedPassword = await bcrypt.hash(
+      user.password,
+      process.env.PASSWORD_HASH_SALT,
+    );
     const newUser = await this.createUser({
       ...user,
       password: hashedPassword,
@@ -68,7 +72,6 @@ export class UsersService {
       throw new UnauthorizedException('Invalid refresh token');
     }
     const userData = await this.getUserById(tokenData.userId);
-    console.log(userData);
     const tokens = await this.authService.generateToken(userData);
     this.authService.saveRefreshToken(tokens.refresh_token, userData.id);
     return { user: userData, response: tokens };
@@ -106,5 +109,41 @@ export class UsersService {
       await user.$add('roles', role.id);
       return dto;
     }
+    throw new BadRequestException('Role or User not found');
+  }
+
+  async removeRoleFromUser(dto: AddRoleDto) {
+    const user = await this.userRepository.findByPk(dto.userId);
+    const role = await this.rolesService.getRoleByName(dto.role);
+    if (role && user) {
+      await user.$remove('roles', role.id);
+      return dto;
+    }
+    throw new BadRequestException('Role or User not found');
+  }
+
+  async deleteUser(id: number) {
+    const user = await this.userRepository.findByPk(id);
+    return await user.destroy();
+  }
+
+  async updateUser(id: number, dto: UpdateUserDto) {
+    const user = await this.userRepository.findByPk(id);
+    if (dto.email) {
+      const userData = await this.getUserByEmail(dto.email);
+      if (userData) {
+        throw new BadRequestException('User with this email already exists');
+      }
+      user.email = dto.email;
+    }
+
+    if (dto.password) {
+      const hashedPassword = await bcrypt.hash(
+        dto.password,
+        process.env.PASSWORD_HASH_SALT,
+      );
+      user.password = hashedPassword;
+    }
+    return await user.save();
   }
 }
