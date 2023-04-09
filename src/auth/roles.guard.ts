@@ -20,6 +20,6 @@ export class RolesGuard implements CanActivate {
   }
 
   private checkAccess(requiredRoles: string[], user: Payload): boolean {
-    return user.roles.some((role) => requiredRoles.includes(role));
+    return user?.roles?.some((role) => requiredRoles.includes(role));
   }
 }
