@@ -41,21 +41,28 @@ export class UsersService {
   }
 
   async register(user: CreateUserDto) {
-    const userData = await this.getUserByEmail(user.email);
-    if (userData) {
-      throw new BadRequestException('User already exists');
+    const transaction = await this.userRepository.sequelize.transaction();
+    try {
+      const userData = await this.getUserByEmail(user.email);
+      if (userData) {
+        throw new BadRequestException('User already exists');
+      }
+      const hashedPassword = await bcrypt.hash(
+        user.password,
+        Number(process.env.PASSWORD_HASH_SALT),
+      );
+      const newUser = await this.createUser({
+        ...user,
+        password: hashedPassword,
+      });
+      const tokens = await this.authService.generateToken(newUser);
+      this.authService.saveRefreshToken(tokens.refresh_token, newUser.id);
+      await transaction.commit();
+      return { user: newUser, response: tokens };
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
     }
-    const hashedPassword = await bcrypt.hash(
-      user.password,
-      process.env.PASSWORD_HASH_SALT,
-    );
-    const newUser = await this.createUser({
-      ...user,
-      password: hashedPassword,
-    });
-    const tokens = await this.authService.generateToken(newUser);
-    this.authService.saveRefreshToken(tokens.refresh_token, newUser.id);
-    return { user: newUser, response: tokens };
   }
 
   async logout(refreshToken: string) {
@@ -140,7 +147,7 @@ export class UsersService {
     if (dto.password) {
       const hashedPassword = await bcrypt.hash(
         dto.password,
-        process.env.PASSWORD_HASH_SALT,
+        Number(process.env.PASSWORD_HASH_SALT),
       );
       user.password = hashedPassword;
     }

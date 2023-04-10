@@ -22,7 +22,6 @@ import { UserModel } from './users.model';
 import { UsersService } from './users.service';
 
 @ApiTags('Users')
-@UseGuards(RolesGuard)
 @Controller('users')
 export class UsersController {
   constructor(
@@ -33,6 +32,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Creates a new user' })
   @ApiResponse({ status: 201, type: UserModel })
   @ApiBody({ type: CreateUserDto })
+  @UseGuards(RolesGuard)
   @UseGuards(AuthGuard)
   @Roles('ADMIN')
   @Post()
@@ -117,6 +117,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Removes specified role from user' })
   @ApiResponse({ status: 201, type: AddRoleDto })
   @ApiBody({ type: AddRoleDto })
+  @UseGuards(RolesGuard)
   @UseGuards(AuthGuard)
   @Roles('ADMIN')
   @Post('/role/remove')
@@ -127,6 +128,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Adds specified role to user' })
   @ApiResponse({ status: 201, type: AddRoleDto })
   @ApiBody({ type: AddRoleDto })
+  @UseGuards(RolesGuard)
   @UseGuards(AuthGuard)
   @Roles('ADMIN')
   @Post('/role')
@@ -144,6 +146,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Updates user' })
   @ApiResponse({ status: 200, type: UserModel })
   @ApiBody({ type: UpdateUserDto })
+  @UseGuards(RolesGuard)
   @UseGuards(AuthGuard)
   @Roles('ADMIN')
   @Put(':id')
@@ -153,6 +156,7 @@ export class UsersController {
 
   @ApiOperation({ summary: 'Deletes user' })
   @ApiResponse({ status: 200 })
+  @UseGuards(RolesGuard)
   @UseGuards(AuthGuard)
   @Roles('ADMIN')
   @Delete(':id')

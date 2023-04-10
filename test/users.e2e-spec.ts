@@ -71,11 +71,11 @@ describe('UsersController (e2e)', () => {
   });
 
   describe('/users (POST)', () => {
-    it('should respond 403 if unauthorized', async () => {
+    it('should respond 401 if unauthorized', async () => {
       await request(app.getHttpServer())
         .post('/users')
         .send(newUser)
-        .expect(403);
+        .expect(401);
     });
 
     it('should respond 403 if not admin', async () => {
