@@ -66,8 +66,8 @@ export class UsersService {
   }
 
   async logout(refreshToken: string) {
-    const tokenData = await this.authService.removeRefreshToken(refreshToken);
-    return tokenData;
+    await this.authService.removeRefreshToken(refreshToken);
+    return true;
   }
 
   async refresh(refreshToken: string) {
@@ -126,7 +126,9 @@ export class UsersService {
       await user.$remove('roles', role.id);
       return dto;
     }
-    throw new BadRequestException('Role or User not found');
+    throw new BadRequestException(
+      `Role: ${dto.role} or User: ${dto.userId} not found`,
+    );
   }
 
   async deleteUser(id: number) {

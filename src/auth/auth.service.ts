@@ -48,11 +48,11 @@ export class AuthService {
     });
 
     if (tokenData) {
-      await tokenData.update({
+      return await tokenData.update({
         refreshToken,
       });
     } else {
-      await this.refreshRepository.create({
+      return await this.refreshRepository.create({
         userId,
         refreshToken,
       });
