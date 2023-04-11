@@ -58,7 +58,7 @@ export class UsersService {
       const tokens = await this.authService.generateToken(newUser);
       this.authService.saveRefreshToken(tokens.refresh_token, newUser.id);
       await transaction.commit();
-      return { user: newUser, response: tokens };
+      return { user: newUser, tokens: tokens };
     } catch (error) {
       await transaction.rollback();
       throw error;
@@ -81,7 +81,7 @@ export class UsersService {
     const userData = await this.getUserById(tokenData.userId);
     const tokens = await this.authService.generateToken(userData);
     this.authService.saveRefreshToken(tokens.refresh_token, userData.id);
-    return { user: userData, response: tokens };
+    return { user: userData, tokens: tokens };
   }
 
   async createUser(dto: CreateUserDto): Promise<UserModel> {
@@ -114,7 +114,7 @@ export class UsersService {
     const role = await this.rolesService.getRoleByName(dto.role);
     if (role && user) {
       await user.$add('roles', role.id);
-      return dto;
+      return user;
     }
     throw new BadRequestException('Role or User not found');
   }
@@ -124,7 +124,7 @@ export class UsersService {
     const role = await this.rolesService.getRoleByName(dto.role);
     if (role && user) {
       await user.$remove('roles', role.id);
-      return dto;
+      return user;
     }
     throw new BadRequestException(
       `Role: ${dto.role} or User: ${dto.userId} not found`,

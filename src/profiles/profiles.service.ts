@@ -17,7 +17,7 @@ export class ProfilesService {
     try {
       const auth = await this.usersService.register(userDto);
       const user = auth.user;
-      const tokens = auth.response;
+      const tokens = auth.tokens;
       const profile = await this.profileRepository.create(userDto);
       await profile.$set('user', user);
       profile.user = user;
