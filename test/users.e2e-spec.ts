@@ -5,11 +5,11 @@ import { AppModule } from './../src/app.module';
 import { CreateUserDto } from '../src/users/dto/create-user.dto';
 import { UserModel } from '../src/users/users.model';
 import { CreateProfileDto } from '../src/profiles/dto/create-profile.dto';
-import { Sequelize } from 'sequelize';
 import { RoleModel } from '../src/roles/roles.model';
 import { ProfileModel } from '../src/profiles/profiles.model';
 import { UserRolesModel } from '../src/roles/user-roles.model';
 import { RefreshModel } from '../src/auth/refresh-token.model';
+import * as bcrypt from 'bcryptjs';
 
 describe('UsersController (e2e)', () => {
   type Tokens = { access_token: string; refresh_token: string };
@@ -49,7 +49,6 @@ describe('UsersController (e2e)', () => {
   let adminTokens: Tokens;
   let userTokens: Tokens;
   let userId: number;
-  let newUserId: number;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -136,7 +135,6 @@ describe('UsersController (e2e)', () => {
       expect(response.body).toMatchObject<UserModel>(
         expect.objectContaining(newUser),
       );
-      newUserId = response.body.id;
     });
   });
 
@@ -155,71 +153,95 @@ describe('UsersController (e2e)', () => {
         .get(`/users/${userId}`)
         .expect(200);
       expect(response.body).toMatchObject<UserModel>(
-        expect.objectContaining(user),
+        expect.objectContaining({
+          email: user.email,
+          password: userHashedPassword,
+        }),
       );
-      expect(response.body).toBe(expect.objectContaining(user));
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          email: user.email,
+          password: userHashedPassword,
+        }),
+      );
     });
   });
 
   describe('/users/role (POST)', () => {
     const url = '/users/role';
     postNotAuthorized(url, {
-      email: newUser.email,
+      userId: userId,
       role: 'ADMIN',
     });
 
     postNotAdmin(url, {
-      email: newUser.email,
+      userId: userId,
       role: 'ADMIN',
     });
 
     it('should add role to user if admin', async () => {
-      const response = await request(app.getHttpServer())
+      let response = await request(app.getHttpServer())
         .post(url)
         .set('Authorization', `Bearer ${adminTokens.access_token}`)
         .send({
-          email: newUser.email,
+          userId: userId,
           role: 'ADMIN',
         })
         .expect(201);
-      expect(response.body.email).toEqual(newUser.email);
-      expect(response.body.roles).toContain('ADMIN');
+      expect(response.body.email).toEqual(user.email);
+      response = await request(app.getHttpServer()).get(`/users/${userId}`);
+      expect(response.body.roles).toContainEqual(
+        expect.objectContaining({ name: 'ADMIN' }),
+      );
     });
   });
 
   describe('/users/role/remove (POST)', () => {
     const url = '/users/role/remove';
     postNotAuthorized(url, {
-      email: newUser.email,
+      userId: userId,
       role: 'ADMIN',
     });
 
     postNotAdmin(url, {
-      email: newUser.email,
+      userId: userId,
       role: 'ADMIN',
     });
 
     it('should remove role from user if admin', async () => {
-      const response = await request(app.getHttpServer())
+      let response = await request(app.getHttpServer())
         .post(url)
         .set('Authorization', `Bearer ${adminTokens.access_token}`)
         .send({
-          email: newUser.email,
+          userId: userId,
           role: 'ADMIN',
         })
         .expect(201);
-      expect(response.body.email).toEqual(newUser.email);
-      expect(response.body.roles).not.toContain('ADMIN');
+      expect(response.body.email).toEqual(user.email);
+      response = await request(app.getHttpServer()).get(`/users/${userId}`);
+      expect(response.body.roles).not.toContainEqual(
+        expect.objectContaining({ name: 'ADMIN' }),
+      );
     });
   });
 
   describe('/users/refresh (POST)', () => {
+    let userTokens: Tokens;
+    beforeAll(async () => {
+      const response = await request(app.getHttpServer())
+        .post('/users/login')
+        .send(user);
+      userTokens = response.body.response;
+    });
+
     it('should return new tokens', async () => {
+      console.log(userTokens);
       const response = await request(app.getHttpServer())
         .post('/users/refresh')
+        .set('Authorization', `Bearer ${userTokens.access_token}`)
         .send({ refresh_token: userTokens.refresh_token })
-        .expect(200);
-      expect(response.body.tokens).toBe<Tokens>({
+        .expect(201);
+      expect(response.body.tokens).toEqual<Tokens>({
         access_token: expect.any(String),
         refresh_token: expect.any(String),
       });
@@ -227,22 +249,30 @@ describe('UsersController (e2e)', () => {
   });
 
   describe('/users/logout (POST)', () => {
+    let userTokens: Tokens;
+    beforeAll(async () => {
+      const response = await request(app.getHttpServer())
+        .post('/users/login')
+        .send(user);
+      userTokens = response.body.response;
+    });
+
     it('should remove refresh token from the database', async () => {
       await request(app.getHttpServer())
         .post('/users/logout')
+        .set('Authorization', `Bearer ${userTokens.access_token}`)
         .send({ refresh_token: userTokens.refresh_token })
-        .expect(200);
+        .expect(201);
     });
   });
 
   describe('users/:id (PUT)', () => {
     const newEmail = 'newEmail@gmail.com';
     const newPassword = 'newPassword';
-    const url = `/users/${userId}`;
 
     it('should respond 401 if not authorized', async () => {
       await request(app.getHttpServer())
-        .put(url)
+        .put(`/users/${userId}`)
         .send({
           email: newEmail,
           password: newPassword,
@@ -252,7 +282,7 @@ describe('UsersController (e2e)', () => {
 
     it('should respond 403 if user is not admin', async () => {
       await request(app.getHttpServer())
-        .put(url)
+        .put(`/users/${userId}`)
         .set('Authorization', `Bearer ${userTokens.access_token}`)
         .send({
           email: newEmail,
@@ -263,35 +293,36 @@ describe('UsersController (e2e)', () => {
 
     it('should update user', async () => {
       const response = await request(app.getHttpServer())
-        .put(url)
+        .put(`/users/${userId}`)
         .set('Authorization', `Bearer ${adminTokens.access_token}`)
         .send({
           email: newEmail,
           password: newPassword,
         })
-        .expect(201);
+        .expect(200);
       expect(response.body.email).toEqual(newEmail);
-      expect(response.body.password).toEqual(newPassword);
+      expect(bcrypt.compareSync(newPassword, response.body.password)).toBe(
+        true,
+      );
     });
   });
 
   describe('/users/:id (DELETE)', () => {
-    const url = `/users/${userId}`;
-
     it('should respond 401 if not authorized', async () => {
-      await request(app.getHttpServer()).delete(url).expect(401);
+      await request(app.getHttpServer()).delete(`/users/${userId}`).expect(401);
     });
 
     it('should respond 403 if user is not admin', async () => {
       await request(app.getHttpServer())
-        .delete(url)
+        .delete(`/users/${userId}`)
+        .query({ id: userId })
         .set('Authorization', `Bearer ${userTokens.access_token}`)
         .expect(403);
     });
 
     it('should delete user', async () => {
       await request(app.getHttpServer())
-        .delete(url)
+        .delete(`/users/${userId}`)
         .set('Authorization', `Bearer ${adminTokens.access_token}`)
         .expect(200);
     });
@@ -318,31 +349,34 @@ describe('UsersController (e2e)', () => {
   });
 
   afterAll(async () => {
-    RefreshModel.truncate({
-      cascade: true,
-      force: true,
-      restartIdentity: true,
-    });
-    ProfileModel.truncate({
-      cascade: true,
-      force: true,
-      restartIdentity: true,
-    });
-    UserRolesModel.truncate({
-      cascade: true,
-      force: true,
-      restartIdentity: true,
-    });
-    UserModel.truncate({
-      cascade: true,
-      force: true,
-      restartIdentity: true,
-    });
-    RoleModel.truncate({
-      cascade: true,
-      force: true,
-      restartIdentity: true,
-    });
+    const truncates = Promise.all([
+      RefreshModel.truncate({
+        cascade: true,
+        force: true,
+        restartIdentity: true,
+      }),
+      ProfileModel.truncate({
+        cascade: true,
+        force: true,
+        restartIdentity: true,
+      }),
+      UserRolesModel.truncate({
+        cascade: true,
+        force: true,
+        restartIdentity: true,
+      }),
+      UserModel.truncate({
+        cascade: true,
+        force: true,
+        restartIdentity: true,
+      }),
+      RoleModel.truncate({
+        cascade: true,
+        force: true,
+        restartIdentity: true,
+      }),
+    ]);
+    await truncates;
     await app.close();
   });
 
