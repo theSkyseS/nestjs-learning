@@ -10,6 +10,7 @@ import {
 import { ProfileModel } from '../profiles/profiles.model';
 import { RoleModel } from '../roles/roles.model';
 import { UserRolesModel } from '../roles/user-roles.model';
+import { RefreshModel } from '../auth/refresh-token.model';
 
 interface UserModelCreationAttr {
   email: string;
@@ -47,4 +48,7 @@ export class UserModel extends Model<UserModel, UserModelCreationAttr> {
 
   @HasOne(() => ProfileModel, 'userId')
   profile: ProfileModel;
+
+  @HasOne(() => RefreshModel, { foreignKey: 'userId', onDelete: 'CASCADE' })
+  refresh: RefreshModel;
 }
