@@ -77,8 +77,14 @@ export class UsersController {
     schema: {
       type: 'object',
       properties: {
-        access_token: { type: 'string' },
-        refresh_token: { type: 'string' },
+        user: { type: 'UserModel' },
+        tokens: {
+          type: 'object',
+          properties: {
+            access_token: { type: 'string' },
+            refresh_token: { type: 'string' },
+          },
+        },
       },
     },
   })
@@ -92,8 +98,8 @@ export class UsersController {
     },
   })
   @UseGuards(AuthGuard)
-  @Get('/refresh')
-  refresh(@Body('refreshToken') refreshToken: string) {
+  @Post('/refresh')
+  refresh(@Body('refresh_token') refreshToken: string) {
     return this.usersServise.refresh(refreshToken);
   }
 
@@ -109,8 +115,8 @@ export class UsersController {
     },
   })
   @UseGuards(AuthGuard)
-  @Get('/logout')
-  logout(@Body('refreshToken') refreshToken: string) {
+  @Post('/logout')
+  logout(@Body('refresh_token') refreshToken: string) {
     return this.usersServise.logout(refreshToken);
   }
 
