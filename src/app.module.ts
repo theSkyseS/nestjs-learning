@@ -14,6 +14,7 @@ import { RolesModule } from './roles/roles.module';
 import { UserRolesModel } from './roles/user-roles.model';
 import { UserModel } from './users/users.model';
 import { UsersModule } from './users/users.module';
+import { RefreshModel } from './auth/refresh-token.model';
 
 @Module({
   imports: [
@@ -30,7 +31,14 @@ import { UsersModule } from './users/users.module';
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      models: [UserModel, RoleModel, UserRolesModel, ProfileModel, PostModel],
+      models: [
+        UserModel,
+        RoleModel,
+        UserRolesModel,
+        ProfileModel,
+        PostModel,
+        RefreshModel,
+      ],
       autoLoadModels: true,
     }),
     UsersModule,
