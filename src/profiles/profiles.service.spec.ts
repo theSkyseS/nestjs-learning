@@ -55,7 +55,7 @@ describe('ProfilesService', () => {
           useValue: {
             register: jest.fn().mockReturnValue({
               user: userMock,
-              response: tokensMock,
+              tokens: tokensMock,
             }),
           },
         },
