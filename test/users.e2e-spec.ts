@@ -378,6 +378,7 @@ describe('UsersController (e2e)', () => {
     ]);
     await truncates;
     await app.close();
+    await RoleModel.sequelize.close();
   });
 
   function postNotAuthorized(url: string, send: any) {
