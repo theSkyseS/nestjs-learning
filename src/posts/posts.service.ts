@@ -14,10 +14,7 @@ export class PostsService {
 
   async create(dto: CreatePostDto, file: Express.Multer.File) {
     let fileName: string = null;
-    const post = await this.postRepository.create({
-      ...dto,
-      image: fileName,
-    });
+    const post = await this.postRepository.create(dto);
     if (file) {
       fileName = (
         await this.filesService.createFile(
@@ -28,6 +25,8 @@ export class PostsService {
           file,
         )
       ).fileName;
+      post.set('image', fileName);
+      post.save();
     }
     return post;
   }
