@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -20,9 +20,8 @@ export class FilesService {
       }
       fs.writeFileSync(path.join(filePath, fileName), file.buffer);
     } catch (e) {
-      throw new HttpException(
+      throw new InternalServerErrorException(
         'Произошла ошибка при записи файла',
-        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
     return await this.filesModel.create({ fileName, ...dto });
@@ -32,9 +31,8 @@ export class FilesService {
     const filePath = path.resolve(process.cwd(), '..', 'static');
     fs.rm(path.join(filePath, fileName), (err) => {
       if (err) {
-        throw new HttpException(
+        throw new InternalServerErrorException(
           'Произошла ошибка при удалении файла',
-          HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
     });
