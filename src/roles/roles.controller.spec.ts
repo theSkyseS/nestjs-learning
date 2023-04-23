@@ -46,4 +46,22 @@ describe('RolesController', () => {
       expect(createRoleSpy).toHaveBeenCalledWith(role);
     });
   });
+
+  describe('getAll', () => {
+    it('should call service', () => {
+      const getAllRolesSpy = jest.spyOn(rolesService, 'getAllRoles');
+      controller.getAll();
+
+      expect(getAllRolesSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('getByName', () => {
+    it('should call service', () => {
+      const getRoleByNameSpy = jest.spyOn(rolesService, 'getRoleByName');
+      controller.getByName('Admin');
+
+      expect(getRoleByNameSpy).toHaveBeenCalledWith('Admin');
+    });
+  });
 });
